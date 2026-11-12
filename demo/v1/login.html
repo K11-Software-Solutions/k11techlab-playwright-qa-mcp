@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Acme Store – Sign in</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 420px; margin: 48px auto; }
+    label { display: block; margin-top: 12px; }
+    input { width: 100%; padding: 8px; }
+    .btn { margin-top: 16px; padding: 10px 16px; }
+    #dashboard { display: none; }
+  </style>
+</head>
+<body>
+  <nav><a href="#help">Help</a></nav>
+  <h1>Sign in to Acme Store</h1>
+  <form id="login-form" class="login-form">
+    <label for="email">Email address</label>
+    <input id="email" name="email" type="email" placeholder="you@example.com">
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password">
+    <label><input id="remember" type="checkbox"> Remember me</label>
+    <button id="login-btn" class="btn btn-primary" type="submit">Sign in</button>
+    <p id="error" role="alert" hidden>Invalid email or password</p>
+  </form>
+  <section id="dashboard">
+    <h2>Welcome back, Alex</h2>
+    <a href="#orders">My orders</a>
+  </section>
+  <script>
+    document.getElementById("login-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const ok = document.getElementById("email").value === "alex@example.com"
+        && document.getElementById("password").value === "correct-horse";
+      document.getElementById("error").hidden = ok;
+      if (ok) {
+        document.getElementById("login-form").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+      }
+    });
+  </script>
+</body>
+</html>

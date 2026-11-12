@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.log
+.qa-mcp/
+test/.tmp-root/
+test-results/
+playwright-report/
+test/fixtures/project/test-results/
+.env

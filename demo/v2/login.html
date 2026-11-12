@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Acme Store – Log in</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 420px; margin: 48px auto; }
+    .field { margin-top: 12px; }
+    .field input { width: 100%; padding: 8px; }
+    .cta { margin-top: 16px; padding: 10px 16px; }
+    .panel { display: none; }
+  </style>
+</head>
+<body>
+  <!-- v2 redesign: ids renamed, button text changed, new classes. Fragile CSS selectors break. -->
+  <nav><a href="#help">Help</a> <a href="#signup">Create account</a></nav>
+  <h1>Log in to Acme Store</h1>
+  <form id="signin-form" class="auth-form">
+    <div class="field">
+      <label for="user-email">Email address</label>
+      <input id="user-email" name="email" type="email" placeholder="you@example.com" autocomplete="email">
+    </div>
+    <div class="field">
+      <label for="user-password">Password</label>
+      <input id="user-password" name="password" type="password" autocomplete="current-password">
+    </div>
+    <label><input id="keep-signed-in" type="checkbox"> Keep me signed in</label>
+    <button id="signin-submit" class="cta cta-primary" type="submit">Log in</button>
+    <button id="google-signin" class="cta cta-secondary" type="button">Continue with Google</button>
+    <p class="form-error" role="alert" hidden>Invalid email or password</p>
+  </form>
+  <section class="panel" id="account-home">
+    <h2>Welcome back, Alex</h2>
+    <a href="#orders">My orders</a>
+  </section>
+  <script>
+    document.getElementById("signin-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const ok = document.getElementById("user-email").value === "alex@example.com"
+        && document.getElementById("user-password").value === "correct-horse";
+      document.querySelector(".form-error").hidden = ok;
+      if (ok) {
+        document.getElementById("signin-form").style.display = "none";
+        document.getElementById("account-home").style.display = "block";
+      }
+    });
+  </script>
+</body>
+</html>

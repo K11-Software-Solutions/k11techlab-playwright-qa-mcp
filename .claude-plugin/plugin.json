@@ -1,0 +1,13 @@
+{
+  "name": "playwright-qa",
+  "version": "0.1.0",
+  "description": "Turn user stories into verified Playwright tests and heal broken locators. MCP tools for page exploration, guarded test writing, structured test runs and self-healing locators.",
+  "author": {
+    "name": "Kavita A. Jadhav",
+    "url": "https://k11softwaresolutions.com"
+  },
+  "homepage": "https://github.com/K11-Software-Solutions/k11techlab-playwright-qa-mcp",
+  "repository": "https://github.com/K11-Software-Solutions/k11techlab-playwright-qa-mcp",
+  "license": "MIT",
+  "keywords": ["playwright", "testing", "qa", "self-healing", "test-automation", "mcp"]
+}

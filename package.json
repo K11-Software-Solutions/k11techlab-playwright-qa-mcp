@@ -1,0 +1,53 @@
+{
+  "name": "k11-playwright-qa-mcp",
+  "version": "0.1.0",
+  "description": "MCP server and Claude Code plugin for Playwright QA: user stories to verified tests, structured test runs, and self-healing locators.",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "prepare": "npm run build",
+    "start": "node dist/cli.js"
+  },
+  "keywords": [
+    "mcp",
+    "playwright",
+    "test-automation",
+    "self-healing",
+    "qa",
+    "claude-code",
+    "ai-testing"
+  ],
+  "author": "Kavita A. Jadhav (K11 Software Solutions)",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "playwright": "^1.65.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.0",
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  },
+  "bin": {
+    "k11-playwright-qa-mcp": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    ".claude-plugin",
+    "commands",
+    ".mcp.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/K11-Software-Solutions/k11techlab-playwright-qa-mcp.git"
+  }
+}
