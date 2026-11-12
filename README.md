@@ -66,22 +66,27 @@ Prompt: **`story_to_playwright`**, a guided workflow from story to passing test.
 
 Requires Node 20+.
 
-### Claude Code
+First, once per machine, install the Chromium build the server uses:
 
 ```bash
-git clone https://github.com/K11-Software-Solutions/k11techlab-playwright-qa-mcp
-cd k11techlab-playwright-qa-mcp
-npm install
-npx playwright install chromium
-# from your app's project folder:
-claude mcp add playwright-qa -- node /path/to/k11techlab-playwright-qa-mcp/dist/cli.js
+npx -y k11-playwright-qa-mcp install-browsers
 ```
 
-**As a plugin** (adds `/story-to-test` and `/heal-tests`), once the package is published to npm:
+### Claude Code: plugin (recommended)
+
+Adds the MCP tools plus the `/story-to-test` and `/heal-tests` commands:
 
 ```text
 /plugin marketplace add K11-Software-Solutions/k11techlab-playwright-qa-mcp
 /plugin install playwright-qa@k11-qa-tools
+```
+
+### Claude Code: MCP server only
+
+From your app's project folder:
+
+```bash
+claude mcp add playwright-qa -- npx -y k11-playwright-qa-mcp
 ```
 
 ### Claude Desktop and other MCP clients
@@ -90,12 +95,21 @@ claude mcp add playwright-qa -- node /path/to/k11techlab-playwright-qa-mcp/dist/
 {
   "mcpServers": {
     "playwright-qa": {
-      "command": "node",
-      "args": ["/path/to/k11techlab-playwright-qa-mcp/dist/cli.js"],
+      "command": "npx",
+      "args": ["-y", "k11-playwright-qa-mcp"],
       "env": { "QA_MCP_ROOT": "/path/to/your/app" }
     }
   }
 }
+```
+
+### From source
+
+```bash
+git clone https://github.com/K11-Software-Solutions/k11techlab-playwright-qa-mcp
+cd k11techlab-playwright-qa-mcp
+npm install && npx playwright install chromium
+claude mcp add playwright-qa -- node /path/to/k11techlab-playwright-qa-mcp/dist/cli.js
 ```
 
 The server works on the project in `QA_MCP_ROOT`, or the current directory if that isn't set. That project needs `@playwright/test` installed for `run_tests`.
@@ -137,7 +151,7 @@ npm run build
 - Healing across multi-step flows (navigate, then heal on the page the test reached)
 - Visual (screenshot) fingerprints as an extra healing signal
 - Optional auto-apply mode for `healed` results in CI, opening a pull request
-- npm package and one-command plugin install
+- Listing in the official MCP Registry and community directories
 
 ---
 

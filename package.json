@@ -7,7 +7,8 @@
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
     "prepare": "npm run build",
-    "start": "node dist/cli.js"
+    "start": "node dist/cli.js",
+    "prepublishOnly": "npm run build && npm test"
   },
   "keywords": [
     "mcp",
@@ -36,7 +37,7 @@
     "k11-playwright-qa-mcp": "dist/cli.js"
   },
   "files": [
-    "dist",
+    "dist/**/*.js",
     ".claude-plugin",
     "commands",
     ".mcp.json",
@@ -49,5 +50,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/K11-Software-Solutions/k11techlab-playwright-qa-mcp.git"
+  },
+  "homepage": "https://github.com/K11-Software-Solutions/k11techlab-playwright-qa-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/K11-Software-Solutions/k11techlab-playwright-qa-mcp/issues"
   }
 }

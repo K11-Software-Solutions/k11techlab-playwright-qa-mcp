@@ -17,11 +17,23 @@ import { explore, fingerprintOf } from "./snapshot.js";
 import { BaselineStore } from "./store.js";
 import { parseStory, scaffoldSpec } from "./story.js";
 
-const VERSION = "0.1.0";
+export const VERSION = "0.1.0";
 
 let browser: Browser | undefined;
+async function launch(): Promise<Browser> {
+  try {
+    return await chromium.launch({ headless: process.env.QA_MCP_HEADED !== "1" });
+  } catch (e) {
+    const msg = (e as Error).message;
+    if (/Executable doesn't exist|browserType\.launch/i.test(msg) && /install/i.test(msg)) {
+      throw new Error("Chromium for Playwright is not installed. Run once: npx -y k11-playwright-qa-mcp install-browsers");
+    }
+    throw e;
+  }
+}
+
 async function withPage<T>(url: string, fn: (page: Page) => Promise<T>): Promise<T> {
-  browser ??= await chromium.launch({ headless: process.env.QA_MCP_HEADED !== "1" });
+  browser ??= await launch();
   const context = await browser.newContext();
   const page = await context.newPage();
   try {
