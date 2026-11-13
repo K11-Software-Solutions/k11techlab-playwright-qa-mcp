@@ -25,7 +25,7 @@ The version number appears in three places and must always match:
 
 - `package.json`: `version`
 - `.claude-plugin/plugin.json`: `version`
-- `src/server.ts`: `VERSION` (reported to MCP clients)
+- `src/version.ts`: `VERSION` (reported to MCP clients and by `--version`)
 
 ## Quality gates
 
@@ -110,6 +110,19 @@ Published npm versions cannot be replaced. Instead:
 ---
 
 ## Release history
+
+### v0.2.0 (upcoming): logged-in pages and healing in CI
+
+**Highlights**
+
+- **Pages behind a login and multi-step flows:** `explore_page`, `check_locator`, `capture_baseline` and `heal_locator` accept a `session` with a saved login (`storage_state`) and up to 25 steps to run before exploring or healing.
+- **`save_login_state` tool:** logs in once and saves the session to `.qa-mcp/auth/`, adding that folder to `.gitignore`.
+- **Secrets stay out of prompts and logs:** step values can read `${ENV:NAME}`; literal fill values are masked in all output.
+- **`heal-ci` command:** runs the suite, heals locator failures against committed baselines, and applies only changes with at least 70% confidence that are clearly ahead of the runner-up. It re-runs the healed tests, reverts any change whose test still fails, writes a Markdown and JSON audit report and sets GitHub Actions outputs.
+- **Pull-request workflow:** `docs/heal-locators.yml` runs `heal-ci` on a schedule and opens a pull request whose description is the audit report.
+- **Run reports** now include the spec file path and error line for each failure.
+
+**Compatibility:** no breaking changes to existing tools. New optional `session` input on four tools.
 
 ### v0.1.0 (13 November 2026): first public release
 
