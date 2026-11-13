@@ -3,7 +3,7 @@
 **Product:** k11 Playwright QA (MCP server and Claude Code plugin)
 **Package:** [`k11-playwright-qa-mcp`](https://www.npmjs.com/package/k11-playwright-qa-mcp) on npm
 **Maintainer:** [K11 Software Solutions LLC](https://k11softwaresolutions.com)
-**Current release:** v0.1.0 (13 November 2026)
+**Current release:** v0.2.0 (13 November 2026)
 
 This document describes how K11 Software Solutions versions, tests, publishes and supports releases of k11 Playwright QA. Every release follows the same quality gates, whether it is published automatically or by hand.
 
@@ -111,7 +111,7 @@ Published npm versions cannot be replaced. Instead:
 
 ## Release history
 
-### v0.2.0 (upcoming): logged-in pages and healing in CI
+### v0.2.0 (13 November 2026): logged-in pages and healing in CI
 
 **Highlights**
 
