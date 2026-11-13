@@ -1,0 +1,23 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "minConfidence": 0.7,
+  "targets": [
+    {
+      "spec": "account.spec.ts",
+      "url": "/login",
+      "session": {
+        "steps": [
+          { "action": "fill", "locator": "page.getByLabel('Email address')", "value": "${ENV:APP_USER}" },
+          { "action": "fill", "locator": "page.getByLabel('Password')", "value": "${ENV:APP_PASSWORD}" },
+          { "action": "click", "locator": "page.getByRole('button', { name: 'Sign in' })" },
+          { "action": "wait_for", "locator": "page.getByRole('heading', { name: 'My account' })" }
+        ]
+      }
+    },
+    {
+      "spec": "checkout.spec.ts",
+      "url": "/cart",
+      "session": { "storage_state": ".qa-mcp/auth/default.json" }
+    }
+  ]
+}

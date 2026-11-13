@@ -8,3 +8,4 @@ playwright-report/
 test/fixtures/project/test-results/
 .env
 *.tgz
+test/.tmp-heal/

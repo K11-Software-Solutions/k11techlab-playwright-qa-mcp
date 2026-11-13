@@ -1,0 +1,58 @@
+# Copy to .github/workflows/heal-locators.yml in the repository of the app you test.
+#
+# Runs your Playwright suite, heals locators broken by UI changes, re-runs the healed
+# tests, and opens a pull request whose description is the audit report: every change
+# with its confidence, reasons, runner-up candidate and re-run result. Nothing reaches
+# your main branch without review.
+name: Heal locators
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1-5" # weekdays 06:00 UTC
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  heal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+
+      # Start the app under test (replace with your own command), then wait for it.
+      - run: npm run start &
+      - run: npx -y wait-on http://localhost:3000
+
+      - name: Heal broken locators
+        id: heal
+        run: npx -y k11-playwright-qa-mcp heal-ci --apply
+        env:
+          # Referenced from .qa-mcp/heal.config.json as ${ENV:APP_USER} / ${ENV:APP_PASSWORD}
+          APP_USER: ${{ secrets.APP_USER }}
+          APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: heal-report
+          path: .qa-mcp/heal-report/
+
+      - name: Open pull request
+        if: steps.heal.outputs.healed != '0'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: bot/heal-locators
+          title: "Heal ${{ steps.heal.outputs.healed }} broken Playwright locator(s)"
+          body-path: ${{ steps.heal.outputs.report }}
+          commit-message: "Heal broken locators (k11-playwright-qa-mcp heal-ci)"
+          add-paths: |
+            tests/**
+          labels: test-maintenance

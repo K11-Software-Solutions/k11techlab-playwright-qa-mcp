@@ -38,6 +38,12 @@ export async function writeTest(root: string, rel: string, code: string, overwri
 export interface TestResult {
   title: string;
   file: string;
+  /** Absolute path of the spec file, when the report says where tests live. */
+  filePath?: string;
+  /** Line of the test declaration. */
+  line?: number;
+  /** Where the error was thrown, when Playwright reports it. */
+  errorLine?: number;
   status: string;
   durationMs: number;
   error?: string;
@@ -60,15 +66,22 @@ export function failingLocator(message: string): string | undefined {
   return m?.[1];
 }
 
+interface PwLocation { file?: string; line?: number; column?: number }
 interface PwSuite {
   title: string;
   file?: string;
-  specs?: { title: string; file: string; tests: { results: { status: string; duration: number; error?: { message?: string } }[]; status?: string }[] }[];
+  specs?: {
+    title: string;
+    file: string;
+    line?: number;
+    tests: { results: { status: string; duration: number; error?: { message?: string; location?: PwLocation }; errorLocation?: PwLocation }[]; status?: string }[];
+  }[];
   suites?: PwSuite[];
 }
 
-export function summarize(report: { suites?: PwSuite[]; stats?: Record<string, number> }): RunSummary {
+export function summarize(report: { suites?: PwSuite[]; stats?: Record<string, number>; config?: { rootDir?: string } }): RunSummary {
   const tests: TestResult[] = [];
+  const rootDir = report.config?.rootDir;
   const walk = (suites: PwSuite[] = [], prefix: string[] = []) => {
     for (const s of suites) {
       const p = s.title && !s.file?.endsWith(s.title) ? [...prefix, s.title] : prefix;
@@ -76,10 +89,15 @@ export function summarize(report: { suites?: PwSuite[]; stats?: Record<string, n
         for (const t of spec.tests) {
           const last = t.results[t.results.length - 1];
           const status = t.status === "flaky" ? "flaky" : last?.status ?? "skipped";
-          const msg = t.results.find((r) => r.error?.message)?.error?.message;
+          const failed = t.results.find((r) => r.error?.message);
+          const msg = failed?.error?.message;
+          const errLoc = failed?.error?.location ?? failed?.errorLocation;
           tests.push({
             title: [...p, spec.title].join(" › "),
             file: spec.file,
+            ...(rootDir ? { filePath: path.resolve(rootDir, spec.file) } : {}),
+            ...(spec.line ? { line: spec.line } : {}),
+            ...(errLoc?.line && status !== "passed" ? { errorLine: errLoc.line } : {}),
             status,
             durationMs: last?.duration ?? 0,
             ...(msg && status !== "passed" ? { error: msg.replace(/\x1b\[[0-9;]*m/g, "").slice(0, 1500), failingLocator: failingLocator(msg) } : {}),
@@ -95,7 +113,10 @@ export function summarize(report: { suites?: PwSuite[]; stats?: Record<string, n
   return { ok: failed === 0, passed: count(["passed"]), failed, skipped: count(["skipped"]), flaky: count(["flaky"]), tests };
 }
 
-export async function runTests(root: string, opts: { spec?: string; grep?: string; timeoutMs?: number } = {}): Promise<RunSummary> {
+export async function runTests(
+  root: string,
+  opts: { spec?: string; grep?: string; timeoutMs?: number; files?: string[] } = {},
+): Promise<RunSummary> {
   const req = createRequire(path.join(root, "package.json"));
   let cli: string;
   try {
@@ -105,6 +126,8 @@ export async function runTests(root: string, opts: { spec?: string; grep?: strin
   }
   const args = [cli, "test", "--reporter=json"];
   if (opts.spec) args.push(path.relative(root, resolveTestPath(root, opts.spec)).replace(/\\/g, "/"));
+  // Internal callers (heal-ci) pass exact spec files from the report; no shell is involved.
+  for (const f of opts.files ?? []) args.push(path.relative(root, path.resolve(root, f)).replace(/\\/g, "/"));
   if (opts.grep) args.push("--grep", opts.grep);
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, args, { cwd: root, env: { ...process.env, FORCE_COLOR: "0" } });

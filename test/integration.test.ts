@@ -40,7 +40,7 @@ describe("MCP server over the protocol", () => {
     await Promise.all([server.connect(a), client.connect(b)]);
 
     const tools = (await client.listTools()).tools.map((t) => t.name).sort();
-    expect(tools).toEqual(["capture_baseline", "check_locator", "explore_page", "heal_locator", "parse_user_story", "run_tests", "write_test"]);
+    expect(tools).toEqual(["capture_baseline", "check_locator", "explore_page", "heal_locator", "parse_user_story", "run_tests", "save_login_state", "write_test"]);
     expect((await client.listPrompts()).prompts.map((p) => p.name)).toContain("story_to_playwright");
 
     const text = (r: unknown) => JSON.parse((r as { content: { text: string }[] }).content[0].text);

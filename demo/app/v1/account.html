@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Acme – My account</title>
+  <script>if (!localStorage.getItem("acme-session")) location.replace("login.html");</script>
+  <style>body { font-family: system-ui, sans-serif; max-width: 520px; margin: 48px auto; } .panel[hidden] { display: none; }</style>
+</head>
+<body>
+  <h1>My account</h1>
+  <nav>
+    <a href="#profile">Edit profile</a>
+    <a href="login.html" id="sign-out">Sign out</a>
+  </nav>
+  <button id="view-orders" class="btn btn-primary" type="button">View orders</button>
+  <button id="cart-btn" class="btn" type="button">Open cart</button>
+  <ul id="orders" class="panel" hidden><li>Order #1001 – Trail backpack</li></ul>
+  <p id="cart" class="panel" hidden>Your cart is empty</p>
+  <script>
+    document.getElementById("view-orders").onclick = () => (document.getElementById("orders").hidden = false);
+    document.getElementById("cart-btn").onclick = () => (document.getElementById("cart").hidden = false);
+  </script>
+</body>
+</html>

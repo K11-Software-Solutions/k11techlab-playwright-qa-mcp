@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Acme – Your account</title>
+  <script>if (!localStorage.getItem("acme-session")) location.replace("login.html");</script>
+  <style>body { font-family: system-ui, sans-serif; max-width: 520px; margin: 48px auto; } .panel[hidden] { display: none; }</style>
+</head>
+<body>
+  <!-- v2 redesign:
+       - "View orders": id and classes renamed, same label        → should heal with high confidence
+       - "Edit profile" link renamed to "Account settings"         → too different: needs a person
+       - "Open cart": id renamed AND its message text changed       → heals, but the test still fails: must be reverted
+       - page title changed                                         → not a locator problem: left alone -->
+  <h1>My account</h1>
+  <nav>
+    <a href="#settings">Account settings</a>
+    <a href="login.html" id="logout">Sign out</a>
+  </nav>
+  <button id="orders-toggle" class="action action-main" type="button">View orders</button>
+  <button id="returns-toggle" class="action" type="button">View returns</button>
+  <button id="cart-toggle" class="action" type="button">Open cart</button>
+  <ul id="order-list" class="panel" hidden><li>Order #1001 – Trail backpack</li></ul>
+  <p id="cart-panel" class="panel" hidden>Nothing in your cart yet</p>
+  <script>
+    document.getElementById("orders-toggle").onclick = () => (document.getElementById("order-list").hidden = false);
+    document.getElementById("cart-toggle").onclick = () => (document.getElementById("cart-panel").hidden = false);
+  </script>
+</body>
+</html>

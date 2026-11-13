@@ -1,6 +1,6 @@
 {
   "name": "playwright-qa",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Turn user stories into verified Playwright tests and heal broken locators. MCP tools for page exploration, guarded test writing, structured test runs and self-healing locators.",
   "author": {
     "name": "Kavita A. Jadhav",

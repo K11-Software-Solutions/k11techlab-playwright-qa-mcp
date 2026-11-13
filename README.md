@@ -51,6 +51,9 @@ It picked the right button over the look-alike, and the suggestion is a role-bas
 | `run_tests` | Runs Playwright Test and returns per-test results with the failing locator. |
 | `capture_baseline` | While tests pass, fingerprints the element each locator matches (`.qa-mcp/baselines.json`). |
 | `heal_locator` | Finds the intended element after a UI change and suggests a verified replacement. |
+| `save_login_state` | Logs in once with a few steps and saves the session for the other tools and your tests. |
+
+`explore_page`, `check_locator`, `capture_baseline` and `heal_locator` accept an optional **session** to reach pages behind a login or several steps into a flow.
 
 Prompt: **`story_to_playwright`**, a guided workflow from story to passing test.
 
@@ -61,6 +64,73 @@ Prompt: **`story_to_playwright`**, a guided workflow from story to passing test.
 3. **Match.** `heal_locator` scores every visible element on the current page against the fingerprint. It uses exact matching for stable attributes and fuzzy, synonym-aware matching for text and ids ("Sign in" ≈ "Log in", `btn` ≈ `button`).
 4. **Verify.** The best match gets the most stable locator that matches exactly one element on the live page.
 5. **Decide.** It reports `healed` only when the confidence is at least 0.55 and clearly ahead of the runner-up. Otherwise it reports `needs_review` with the top candidates, or `not_found` if nothing resembles the original. Without a baseline it falls back to what the locator itself implies and says so.
+
+Commit `.qa-mcp/baselines.json` to your repository so healing works in CI. Do **not** commit `.qa-mcp/auth/`, which holds login sessions; `save_login_state` adds it to `.gitignore` for you.
+
+## Pages behind a login and multi-step flows
+
+Every page tool accepts a `session`:
+
+```json
+{
+  "url": "https://shop.example.com/login",
+  "session": {
+    "storage_state": ".qa-mcp/auth/default.json",
+    "steps": [
+      { "action": "click", "locator": "page.getByRole('link', { name: 'My orders' })" },
+      { "action": "wait_for", "locator": "page.getByRole('heading', { name: 'Order history' })" }
+    ]
+  }
+}
+```
+
+- **`storage_state`** is a saved login. Create one with `save_login_state` (log in once with steps) or reuse the file from your Playwright global setup. It must be inside the project.
+- **`steps`** run after the start page loads: `goto`, `click`, `fill`, `press`, `select`, `check`, `uncheck` and `wait_for`, up to 25. Locators are parsed the same safe way as everywhere else.
+- **Secrets stay out of prompts and logs.** Write `"value": "${ENV:APP_PASSWORD}"` and the value is read from the environment. Results show the placeholder, and literal fill values are masked as `•••`.
+- Baselines are stored under the page the steps end on, so capturing and healing with the same session line up.
+
+## Healing in CI, with an audit trail
+
+`heal-ci` repairs locators broken by a UI change and opens a pull request that explains every change:
+
+```bash
+npx -y k11-playwright-qa-mcp heal-ci --apply
+```
+
+1. Runs your Playwright suite.
+2. For each locator failure, works out the page the test was on (from `.qa-mcp/heal.config.json`, or the test's own `page.goto(...)`) and heals against the committed baseline, logging in first if the config says so.
+3. Applies a change only when confidence is at least **0.7** (`--min-confidence`) and clearly ahead of the runner-up.
+4. **Re-runs the healed tests and reverts any change whose test still fails.** Each change is kept or reverted on its own merits.
+5. Leaves failures that aren't about locators alone: they may be real bugs.
+6. Writes `heal-report.md` (the pull-request description) and `heal-report.json` (full evidence).
+
+Without `--apply`, it's a dry run that only reports suggestions. A real report from the demo app's redesign:
+
+> **1 healed and verified**, 0 suggested, 1 reverted, 1 needs review, 0 not found, 1 failure not caused by locators.
+>
+> | Test | Old locator | New locator | Confidence | Runner-up | Re-run |
+> |---|---|---|---|---|---|
+> | Account › shows my orders | `page.locator('#view-orders')` | `page.getByRole('button', { name: 'View orders' })` | 82% | `View returns` button (59%) | passed |
+>
+> **Needs a person:** "Edit profile" link → best candidate "Account settings" (45%), not confident enough to change. "Open cart" healed at 85%, but the test still failed because the cart message changed too, so the change was **reverted**.
+>
+> **Not caused by locators:** "has the account title" (the page title changed). Untouched.
+
+Copy [`docs/heal-locators.yml`](docs/heal-locators.yml) into your app's `.github/workflows/` to run it on a schedule and open the pull request automatically, and [`docs/heal.config.example.json`](docs/heal.config.example.json) to `.qa-mcp/heal.config.json` to tell it how to log in.
+
+## How it compares to Microsoft's Playwright MCP
+
+[Playwright MCP](https://github.com/microsoft/playwright-mcp) lets an AI drive a browser through any task, and Playwright's test agents (planner, generator, healer) build on it. Use them to explore and automate broadly. Use k11 Playwright QA when you need test maintenance you can audit:
+
+| | Playwright MCP and test agents | k11 Playwright QA |
+|---|---|---|
+| Healing evidence | The agent's reasoning | Confidence score, specific reasons and the runner-up, in a report |
+| Reference point | The current page | A fingerprint saved when the test last passed |
+| Same input, same result | Varies by run and model | Yes |
+| Edits to your tests | The agent edits them | Only verified, confident changes; the rest goes to a person |
+| CI output | Agent session | A pull request with an audit report |
+
+They work well together: drive flows with Playwright MCP, and keep your suite healthy with k11 Playwright QA.
 
 ## Install
 
@@ -142,15 +212,15 @@ After a UI change:
 ```bash
 npm install
 npx playwright install chromium
-npm test        # unit, browser and MCP-protocol tests (22)
+npm test        # unit, browser, login-flow, heal-ci and MCP-protocol tests (31)
 npm run build
 ```
 
 ## Roadmap
 
-- Healing across multi-step flows (navigate, then heal on the page the test reached)
+- Learn each test's page automatically from a Playwright trace, so `heal.config.json` is rarely needed
 - Visual (screenshot) fingerprints as an extra healing signal
-- Optional auto-apply mode for `healed` results in CI, opening a pull request
+- Healing for chained and filtered locators (`.filter()`, `.nth()`, nested locators)
 - Listing in the official MCP Registry and community directories
 
 ---
