@@ -3,7 +3,7 @@
 **Product:** k11 Playwright QA (MCP server and Claude Code plugin)
 **Package:** [`k11-playwright-qa-mcp`](https://www.npmjs.com/package/k11-playwright-qa-mcp) on npm
 **Maintainer:** [K11 Software Solutions LLC](https://k11softwaresolutions.com)
-**Current release:** v0.2.0 (13 November 2026)
+**Current release:** v0.2.1 (13 November 2026)
 
 This document describes how K11 Software Solutions versions, tests, publishes and supports releases of k11 Playwright QA. Every release follows the same quality gates, whether it is published automatically or by hand.
 
@@ -21,9 +21,10 @@ Releases follow [Semantic Versioning](https://semver.org/):
 
 While the product is in 0.x, minor releases may include small breaking changes. Each one is called out in the release notes.
 
-The version number appears in three places and must always match:
+The version number appears in these places and must always match:
 
 - `package.json`: `version`
+- `server.json`: `version` and `packages[0].version` (the MCP Registry listing)
 - `.claude-plugin/plugin.json`: `version`
 - `src/version.ts`: `VERSION` (reported to MCP clients and by `--version`)
 
@@ -52,7 +53,7 @@ Gates 1 and 2 run automatically before every publish (`prepublishOnly`), so a br
    git push origin main --tags
    ```
 
-6. The **Release** workflow verifies the tag, runs the tests and publishes to npm with [provenance](https://docs.npmjs.com/generating-provenance-statements), which links each published package to the exact source commit that built it.
+6. The **Release** workflow verifies the tag, runs the tests and publishes to npm with [provenance](https://docs.npmjs.com/generating-provenance-statements), which links each published package to the exact source commit that built it. It then updates the listing in the official [MCP Registry](https://registry.modelcontextprotocol.io) as `io.github.K11-Software-Solutions/playwright-qa`, signing in with the workflow's GitHub identity.
 7. Create a GitHub Release from the tag, using the release-history entry as the notes.
 8. Verify the published package (see below).
 
@@ -110,6 +111,12 @@ Published npm versions cannot be replaced. Instead:
 ---
 
 ## Release history
+
+### v0.2.1 (13 November 2026): registry listing
+
+- Listed in the official MCP Registry as `io.github.K11-Software-Solutions/playwright-qa` (`server.json`, `mcpName` in `package.json`), and claimable on Glama (`glama.json`).
+- The Release workflow publishes the registry listing after npm, and skips npm if the version is already published.
+- No changes to tools or behaviour.
 
 ### v0.2.0 (13 November 2026): logged-in pages and healing in CI
 

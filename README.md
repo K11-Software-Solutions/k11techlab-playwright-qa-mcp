@@ -9,7 +9,7 @@ AI coding assistants write Playwright tests quickly, but they guess selectors. T
 - **Structured test runs.** It runs Playwright and returns per-test results, including the exact locator a failing test was waiting for.
 - **Self-healing locators.** When the UI changes, it finds the element the test meant and suggests a verified replacement with a confidence score and the reasons. It never silently edits your tests.
 
-Works with **Claude Code** (as a plugin with `/story-to-test` and `/heal-tests` commands), **Claude Desktop**, and any other MCP client.
+Works with **Claude Code** (as a plugin with `/story-to-test` and `/heal-tests` commands), **Claude Desktop**, and any other MCP client. Listed in the official [MCP Registry](https://registry.modelcontextprotocol.io) as `io.github.K11-Software-Solutions/playwright-qa`.
 
 ---
 

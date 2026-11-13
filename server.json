@@ -1,0 +1,28 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.K11-Software-Solutions/playwright-qa",
+  "title": "k11 Playwright QA",
+  "description": "User stories to verified Playwright tests, and self-healing locators with an audit trail.",
+  "websiteUrl": "https://github.com/K11-Software-Solutions/k11techlab-playwright-qa-mcp",
+  "repository": {
+    "url": "https://github.com/K11-Software-Solutions/k11techlab-playwright-qa-mcp",
+    "source": "github"
+  },
+  "version": "0.2.1",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "k11-playwright-qa-mcp",
+      "version": "0.2.1",
+      "transport": { "type": "stdio" },
+      "environmentVariables": [
+        {
+          "name": "QA_MCP_ROOT",
+          "description": "Folder of the project under test (defaults to the current directory)",
+          "isRequired": false,
+          "format": "string"
+        }
+      ]
+    }
+  ]
+}

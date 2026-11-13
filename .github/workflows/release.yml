@@ -1,14 +1,19 @@
 name: Release
 
-# Publishes to npm when a version tag is pushed, e.g. `git tag v0.1.1 && git push --tags`.
-# Requires a repository secret NPM_TOKEN (an npm automation or granular access token).
+# On a version tag (e.g. `git tag v0.2.1 && git push --tags`):
+#   1. verify the tag matches package.json and server.json, run the tests
+#   2. publish to npm with provenance (needs the NPM_TOKEN secret)
+#   3. publish the listing to the official MCP Registry (GitHub OIDC, no secret)
 on:
   push:
     tags: ["v*"]
 
 permissions:
   contents: read
-  id-token: write # npm provenance
+  id-token: write # npm provenance and MCP Registry login
+
+env:
+  MCP_PUBLISHER_VERSION: v1.8.9
 
 jobs:
   publish:
@@ -22,8 +27,39 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - name: Check tag matches package version
-        run: test "v$(node -p "require('./package.json').version")" = "${GITHUB_REF_NAME}"
-      - run: npm publish --provenance --access public
+      - name: Check versions match the tag
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          test "$(node -p "require('./package.json').version")" = "$v"
+          test "$(node -p "require('./server.json').version")" = "$v"
+          test "$(node -p "require('./server.json').packages[0].version")" = "$v"
+      - name: Publish to npm
+        run: |
+          if npm view "k11-playwright-qa-mcp@${GITHUB_REF_NAME#v}" version >/dev/null 2>&1; then
+            echo "Already on npm; skipping"
+          else
+            npm publish --provenance --access public
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+      - name: Download and verify mcp-publisher
+        run: |
+          set -euo pipefail
+          archive="mcp-publisher_linux_amd64.tar.gz"
+          base_url="https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}"
+          curl --fail --location --silent --show-error --output "$archive" "$base_url/$archive"
+          curl --fail --location --silent --show-error --output "$archive.sigstore.json" "$base_url/$archive.sigstore.json"
+          cosign verify-blob \
+            --bundle "$archive.sigstore.json" \
+            --certificate-identity "https://github.com/modelcontextprotocol/registry/.github/workflows/release.yml@refs/tags/${MCP_PUBLISHER_VERSION}" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            "$archive"
+          tar xzf "$archive" mcp-publisher
+      - name: Publish to the MCP Registry
+        run: |
+          ./mcp-publisher login github-oidc
+          for i in 1 2 3 4 5; do ./mcp-publisher publish && exit 0; echo "Retrying in 20s (npm may still be propagating)"; sleep 20; done
+          exit 1
