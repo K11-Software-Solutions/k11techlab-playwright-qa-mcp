@@ -61,5 +61,5 @@ jobs:
       - name: Publish to the MCP Registry
         run: |
           ./mcp-publisher login github-oidc
-          for i in 1 2 3 4 5; do ./mcp-publisher publish && exit 0; echo "Retrying in 20s (npm may still be propagating)"; sleep 20; done
+          for i in $(seq 1 12); do ./mcp-publisher publish && exit 0; echo "Retrying in 30s (npm may still be propagating)"; sleep 30; done
           exit 1
