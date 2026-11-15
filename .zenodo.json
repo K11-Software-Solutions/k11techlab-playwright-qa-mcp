@@ -1,0 +1,36 @@
+{
+  "title": "k11 Playwright QA MCP Server",
+  "upload_type": "software",
+  "description": "<p>MCP server and Claude Code plugin for Playwright: turns user stories into tests with locators verified on the live page, runs them with structured results, and heals broken locators with a confidence score, reasons and the runner-up. heal-ci applies safe fixes in CI and opens a pull request with an audit report.</p><p>Source code: <a href=\"https://github.com/K11-Software-Solutions/k11techlab-playwright-qa-mcp\">https://github.com/K11-Software-Solutions/k11techlab-playwright-qa-mcp</a></p>",
+  "creators": [
+    {
+      "name": "Jadhav, Kavita",
+      "orcid": "0009-0009-8507-4976",
+      "affiliation": "K11 Software Solutions"
+    }
+  ],
+  "license": "MIT",
+  "access_right": "open",
+  "keywords": [
+    "playwright",
+    "test automation",
+    "self-healing tests",
+    "model context protocol",
+    "MCP",
+    "claude code",
+    "quality engineering"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/K11-Software-Solutions/k11techlab-playwright-qa-mcp",
+      "relation": "isSupplementTo",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "10.18535/ijecs/v15i06.5563",
+      "relation": "isSupplementTo",
+      "scheme": "doi",
+      "resource_type": "publication-article"
+    }
+  ]
+}
