@@ -9,3 +9,4 @@ test/fixtures/project/test-results/
 .env
 *.tgz
 test/.tmp-heal/
+test/.tmp-mobile/

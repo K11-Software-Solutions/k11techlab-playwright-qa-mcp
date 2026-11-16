@@ -1,6 +1,7 @@
 /** Baseline fingerprints, stored in the project at .qa-mcp/baselines.json. */
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { DESKTOP } from "./devices.js";
 import type { Reference } from "./heal.js";
 
 interface Entry {
@@ -9,13 +10,16 @@ interface Entry {
 }
 type Baselines = Record<string, Record<string, Entry>>;
 
-export function pageKey(url: string): string {
+/** Baselines are kept per page and per device: a mobile layout's elements differ from desktop's. */
+export function pageKey(url: string, device: string = DESKTOP): string {
+  let key: string;
   try {
     const u = new URL(url);
-    return u.protocol === "file:" ? `file://${path.basename(u.pathname)}` : `${u.origin}${u.pathname}`;
+    key = u.protocol === "file:" ? `file://${path.basename(u.pathname)}` : `${u.origin}${u.pathname}`;
   } catch {
-    return url;
+    key = url;
   }
+  return device === DESKTOP ? key : `${key} @ ${device}`;
 }
 
 export class BaselineStore {
@@ -33,13 +37,13 @@ export class BaselineStore {
     }
   }
 
-  async get(url: string, locator: string): Promise<Reference | undefined> {
-    return (await this.load())[pageKey(url)]?.[locator]?.fingerprint;
+  async get(url: string, locator: string, device: string = DESKTOP): Promise<Reference | undefined> {
+    return (await this.load())[pageKey(url, device)]?.[locator]?.fingerprint;
   }
 
-  async put(url: string, entries: Record<string, Reference>): Promise<void> {
+  async put(url: string, entries: Record<string, Reference>, device: string = DESKTOP): Promise<void> {
     const all = await this.load();
-    const key = pageKey(url);
+    const key = pageKey(url, device);
     all[key] ??= {};
     const now = new Date().toISOString();
     for (const [loc, fp] of Object.entries(entries)) all[key][loc] = { fingerprint: fp, capturedAt: now };

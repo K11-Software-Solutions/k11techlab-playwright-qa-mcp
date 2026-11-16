@@ -48,6 +48,8 @@ export interface TestResult {
   durationMs: number;
   error?: string;
   failingLocator?: string;
+  /** Playwright project (e.g. "Mobile Safari") when the config defines several. */
+  project?: string;
 }
 export interface RunSummary {
   ok: boolean;
@@ -74,7 +76,7 @@ interface PwSuite {
     title: string;
     file: string;
     line?: number;
-    tests: { results: { status: string; duration: number; error?: { message?: string; location?: PwLocation }; errorLocation?: PwLocation }[]; status?: string }[];
+    tests: { projectName?: string; results: { status: string; duration: number; error?: { message?: string; location?: PwLocation }; errorLocation?: PwLocation }[]; status?: string }[];
   }[];
   suites?: PwSuite[];
 }
@@ -99,6 +101,7 @@ export function summarize(report: { suites?: PwSuite[]; stats?: Record<string, n
             ...(spec.line ? { line: spec.line } : {}),
             ...(errLoc?.line && status !== "passed" ? { errorLine: errLoc.line } : {}),
             status,
+            ...(t.projectName ? { project: t.projectName } : {}),
             durationMs: last?.duration ?? 0,
             ...(msg && status !== "passed" ? { error: msg.replace(/\x1b\[[0-9;]*m/g, "").slice(0, 1500), failingLocator: failingLocator(msg) } : {}),
           });
@@ -115,7 +118,7 @@ export function summarize(report: { suites?: PwSuite[]; stats?: Record<string, n
 
 export async function runTests(
   root: string,
-  opts: { spec?: string; grep?: string; timeoutMs?: number; files?: string[] } = {},
+  opts: { spec?: string; grep?: string; timeoutMs?: number; files?: string[]; project?: string } = {},
 ): Promise<RunSummary> {
   const req = createRequire(path.join(root, "package.json"));
   let cli: string;
@@ -129,6 +132,7 @@ export async function runTests(
   // Internal callers (heal-ci) pass exact spec files from the report; no shell is involved.
   for (const f of opts.files ?? []) args.push(path.relative(root, path.resolve(root, f)).replace(/\\/g, "/"));
   if (opts.grep) args.push("--grep", opts.grep);
+  if (opts.project) args.push("--project", opts.project);
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, args, { cwd: root, env: { ...process.env, FORCE_COLOR: "0" } });
     let out = "";

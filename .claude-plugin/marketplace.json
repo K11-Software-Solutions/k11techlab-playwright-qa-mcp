@@ -1,5 +1,6 @@
 {
   "name": "k11-qa-tools",
+  "description": "k11 Playwright QA: user stories to verified Playwright tests and self-healing locators with an audit trail, on desktop and mobile web.",
   "owner": {
     "name": "K11 Software Solutions",
     "url": "https://k11softwaresolutions.com"

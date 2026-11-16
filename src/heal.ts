@@ -115,6 +115,8 @@ export interface HealResult {
   confidence?: number;
   reasons?: string[];
   candidates?: { locator?: string; score: number; reasons: string[] }[];
+  /** Other verified unique locators for the suggested element (e.g. role+name when the suggestion is a test id). */
+  alternatives?: string[];
   referenceSource?: "baseline" | "implied";
   note?: string;
 }
@@ -133,8 +135,10 @@ export async function heal(page: Page, original: string, spec: LocatorSpec | nul
   const elements = await fingerprintPage(page, 400);
   const ranked = rank(ref, elements, 3);
   const withLocators = [];
+  let alternatives: string[] = [];
   for (const r of ranked) {
     const uniq = await uniqueLocators(page, r.element);
+    if (!withLocators.length) alternatives = uniq.slice(1);
     withLocators.push({ locator: uniq[0], score: Math.round(r.score * 100) / 100, reasons: r.reasons });
   }
   const best = withLocators[0];
@@ -144,6 +148,7 @@ export async function heal(page: Page, original: string, spec: LocatorSpec | nul
     original: render(spec),
     matches,
     candidates: withLocators,
+    ...(alternatives.length ? { alternatives } : {}),
     referenceSource: baseline ? "baseline" : "implied",
   };
   if (!best || best.score < 0.3) return { ...base, status: "not_found", note: "No element on the page resembles the original." };

@@ -1,6 +1,6 @@
 ---
 description: Run Playwright tests and repair locators broken by UI changes
-argument-hint: [spec file] [page URL]
+argument-hint: "[spec file] [page URL]"
 ---
 
 Repair Playwright tests whose locators broke because the UI changed, using the playwright-qa MCP tools.
@@ -8,7 +8,7 @@ Repair Playwright tests whose locators broke because the UI changed, using the p
 Input: $ARGUMENTS (optional spec file, optional page URL)
 
 1. Call `run_tests` (for the given spec, if any).
-2. For each failure that has a `failingLocator`, find the page URL the test was on (from the test code or the argument) and call `heal_locator`. If the page needs a login or several steps to reach, pass a `session` (a `storage_state` from `save_login_state`, and/or `steps`); check `.qa-mcp/heal.config.json` for one first.
+2. For each failure that has a `failingLocator`, find the page URL the test was on (from the test code or the argument) and call `heal_locator`. If the failure came from a mobile Playwright project (its `project` field, e.g. "Mobile Safari"), pass the matching `device` ("iPhone 12" for Mobile Safari, "Pixel 5" for Mobile Chrome, or the device the config uses) and `check_devices: ["desktop"]` so the fix also works on desktop. If the page needs a login or several steps to reach, pass a `session` (a `storage_state` from `save_login_state`, and/or `steps`); check `.qa-mcp/heal.config.json` for one first.
 3. Act on the result:
    - `healed`: replace the old locator with `suggestion` in the test file.
    - `needs_review` or `ambiguous`: show the user the candidates, scores and reasons, and ask which one is right before editing.

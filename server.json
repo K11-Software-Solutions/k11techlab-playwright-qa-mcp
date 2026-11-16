@@ -8,13 +8,15 @@
     "url": "https://github.com/K11-Software-Solutions/k11techlab-playwright-qa-mcp",
     "source": "github"
   },
-  "version": "0.2.1",
+  "version": "0.3.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "k11-playwright-qa-mcp",
-      "version": "0.2.1",
-      "transport": { "type": "stdio" },
+      "version": "0.3.0",
+      "transport": {
+        "type": "stdio"
+      },
       "environmentVariables": [
         {
           "name": "QA_MCP_ROOT",

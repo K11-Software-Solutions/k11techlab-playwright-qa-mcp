@@ -1,5 +1,6 @@
 /** Shared headless browser and session-aware page opening. */
 import { chromium, type Browser, type BrowserContext, type Page } from "playwright";
+import { contextOptions, DESKTOP } from "./devices.js";
 import { resolveStorageState, runSteps, type Session } from "./session.js";
 
 let browser: Browser | undefined;
@@ -31,10 +32,10 @@ export interface Opened {
   steps: string[];
 }
 
-/** Open url with an optional saved login and steps; the caller must close the context. */
-export async function openPage(url: string, root: string, session?: Session): Promise<Opened> {
+/** Open url with an optional saved login, steps and device profile; the caller must close the context. */
+export async function openPage(url: string, root: string, session?: Session, device: string = DESKTOP): Promise<Opened> {
   const storageState = await resolveStorageState(root, session?.storage_state);
-  const context = await (await getBrowser()).newContext(storageState ? { storageState } : {});
+  const context = await (await getBrowser()).newContext({ ...contextOptions(device), ...(storageState ? { storageState } : {}) });
   const page = await context.newPage();
   try {
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30_000 });
@@ -48,8 +49,8 @@ export async function openPage(url: string, root: string, session?: Session): Pr
   }
 }
 
-export async function withPage<T>(url: string, root: string, session: Session | undefined, fn: (o: Opened) => Promise<T>): Promise<T> {
-  const opened = await openPage(url, root, session);
+export async function withPage<T>(url: string, root: string, session: Session | undefined, fn: (o: Opened) => Promise<T>, device: string = DESKTOP): Promise<T> {
+  const opened = await openPage(url, root, session, device);
   try {
     return await fn(opened);
   } finally {

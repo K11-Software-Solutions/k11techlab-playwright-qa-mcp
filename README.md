@@ -52,8 +52,9 @@ It picked the right button over the look-alike, and the suggestion is a role-bas
 | `capture_baseline` | While tests pass, fingerprints the element each locator matches (`.qa-mcp/baselines.json`). |
 | `heal_locator` | Finds the intended element after a UI change and suggests a verified replacement. |
 | `save_login_state` | Logs in once with a few steps and saves the session for the other tools and your tests. |
+| `list_devices` | Phone and tablet profiles for mobile web testing (iPhone, Pixel, Galaxy, iPad…). |
 
-`explore_page`, `check_locator`, `capture_baseline` and `heal_locator` accept an optional **session** to reach pages behind a login or several steps into a flow.
+`explore_page`, `check_locator`, `capture_baseline` and `heal_locator` accept an optional **session** to reach pages behind a login or several steps into a flow, and an optional **device** (e.g. `"iPhone 15"`) for mobile web. `run_tests` accepts a Playwright **project** (e.g. `"Mobile Safari"`).
 
 Prompt: **`story_to_playwright`**, a guided workflow from story to passing test.
 
@@ -89,6 +90,25 @@ Every page tool accepts a `session`:
 - **Secrets stay out of prompts and logs.** Write `"value": "${ENV:APP_PASSWORD}"` and the value is read from the environment. Results show the placeholder, and literal fill values are masked as `•••`.
 - Baselines are stored under the page the steps end on, so capturing and healing with the same session line up.
 
+## Mobile web
+
+Most sites show phones a different layout: a hamburger menu instead of a nav bar, hidden columns, separate buttons. Locators that work on desktop often don't on mobile, and the other way round. Every page tool takes a **device** (any of Playwright's built-in profiles: screen size, pixel density, touch and mobile user agent):
+
+```text
+explore_page   { url, device: "iPhone 15" }           → the elements a phone user actually sees
+check_locator  { url, locator, devices: ["desktop", "iPhone 15", "Pixel 7"] }
+               → "unique and visible on every device", or which device it fails on
+capture_baseline / heal_locator { ..., device: "Pixel 7" }   → baselines are kept per device
+heal_locator   { ..., check_devices: ["desktop"] }   → warns if a mobile fix isn't valid on desktop
+```
+
+**heal-ci across Playwright projects.** If your `playwright.config` has desktop and mobile projects, each failure is healed on the device its project emulates. Projects named after a device (`"Pixel 7"`) or Playwright's template names (`"Mobile Chrome"`, `"Mobile Safari"`) are recognised; map any others in `heal.config.json` (`"projects": { "Phones": "iPhone 15" }`). When one broken locator fails on several devices:
+
+- the devices must agree on the replacement. If each finds a different "best" element (say separate desktop and mobile buttons with their own test ids), heal-ci looks for a locator that is unique on all of them, such as the shared role and name, and otherwise asks a person;
+- a change is kept only if the test then passes **in every project**, so a fix for mobile can never silently break desktop.
+
+Pages are emulated in Chromium, which is right for responsive layouts and locators. For Safari-specific rendering, keep a WebKit project in your Playwright config. Native mobile apps need Appium, not Playwright.
+
 ## Healing in CI, with an audit trail
 
 `heal-ci` repairs locators broken by a UI change and opens a pull request that explains every change:
@@ -98,9 +118,9 @@ npx -y k11-playwright-qa-mcp heal-ci --apply
 ```
 
 1. Runs your Playwright suite.
-2. For each locator failure, works out the page the test was on (from `.qa-mcp/heal.config.json`, or the test's own `page.goto(...)`) and heals against the committed baseline, logging in first if the config says so.
+2. For each locator failure, works out the page the test was on (from `.qa-mcp/heal.config.json`, or the test's own `page.goto(...)`) and heals against the committed baseline on the device the test's Playwright project emulates, logging in first if the config says so.
 3. Applies a change only when confidence is at least **0.7** (`--min-confidence`) and clearly ahead of the runner-up.
-4. **Re-runs the healed tests and reverts any change whose test still fails.** Each change is kept or reverted on its own merits.
+4. **Re-runs the healed tests and reverts any change whose test still fails** in any Playwright project. Each change is kept or reverted on its own merits.
 5. Leaves failures that aren't about locators alone: they may be real bugs.
 6. Writes `heal-report.md` (the pull-request description) and `heal-report.json` (full evidence).
 
@@ -221,7 +241,7 @@ npm run build
 - Learn each test's page automatically from a Playwright trace, so `heal.config.json` is rarely needed
 - Visual (screenshot) fingerprints as an extra healing signal
 - Healing for chained and filtered locators (`.filter()`, `.nth()`, nested locators)
-- Listing in the official MCP Registry and community directories
+- Visual comparison of desktop and mobile layouts
 
 ---
 
