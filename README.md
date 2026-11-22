@@ -60,6 +60,8 @@ Prompt: **`story_to_playwright`**, a guided workflow from story to passing test.
 
 ## How self-healing works
 
+> All K11 QA tools keep their settings, baselines and reports in `.qa-mcp/`. [What each file is for, and what to commit](https://github.com/K11-Software-Solutions/k11techlab-release-gate-mcp/blob/main/docs/qa-mcp-folder.md).
+
 1. **Baseline.** While tests pass, `capture_baseline` records each element's fingerprint: role, accessible name, test id, id, `name`, type, label, placeholder, classes, text and href.
 2. **Detect.** When `run_tests` reports a failure, it includes the locator Playwright was waiting for.
 3. **Match.** `heal_locator` scores every visible element on the current page against the fingerprint. It uses exact matching for stable attributes and fuzzy, synonym-aware matching for text and ids ("Sign in" ≈ "Log in", `btn` ≈ `button`).
