@@ -45,7 +45,7 @@ const VAGUE = [
 const VAGUE_OUTCOME = /\b(works?|working|is successful|succeeds?|correctly|properly|as expected|is handled|handles it|is fine|is ok(ay)?)\b/i;
 const OBSERVABLE = /\b(see|sees|shown?|shows|display(s|ed)?|visible|message|redirect(s|ed)?|page|url|receives?|email|download(s|ed)?|disabled|enabled|error|text|title|heading|count|list|button|link|status|toast|banner|notification|"[^"]+")\b/i;
 const FAILURE = /\b(invalid|wrong|incorrect|error|fail(s|ed|ure)?|denied|forbidden|unauthori[sz]ed|expired?|empty|missing|blank|not\b|no\b|cannot|can't|unknown|locked|timeout|offline|duplicate|too (long|many|short))\b/i;
-const LIMIT = /\b(up to|at most|at least|maximum|minimum|max|min|limit(ed)?|expire(s|d)?|timeout|within|no more than|no less than|threshold|retries|attempts)\b/i;
+const LIMIT = /\b(up to|at most|at least|maximum|minimum|max|min|limit(ed)?|expires?|timeout|within|no more than|no less than|threshold|retries|attempts)\b/i;
 const HAS_NUMBER = /\d/;
 const STOP_TERMS = new Set(["As", "I", "Given", "When", "Then", "And", "But", "Scenario", "Title", "Story", "Feature",
   "Acceptance", "AC", "The", "A", "An", "If", "So", "On", "In", "My", "Our", "This", "That", "It"]);
@@ -128,9 +128,11 @@ export function reviewStory(story: Story, raw: string, context?: string): Review
   const seen = new Set<string>();
   const outcomeQuotes = new Set(questions.filter((q) => q.kind === "outcome" && q.quote).flatMap((q) => q.quote!.split("; ")));
   for (const s of all) {
+    // Quoted text is what the page shows ("This code has expired"), not a requirement to question.
+    const req = s.replace(/"[^"]*"/g, '""');
     for (const term of VAGUE) {
       if (outcomeQuotes.has(s)) continue;                 // already asked about as a vague outcome
-      if (wordRe(term).test(s) && !seen.has(term)) {
+      if (wordRe(term).test(req) && !seen.has(term)) {
         seen.add(term);
         questions.push({
           kind: "vague-term",
@@ -140,7 +142,7 @@ export function reviewStory(story: Story, raw: string, context?: string): Review
         });
       }
     }
-    if (LIMIT.test(s) && !HAS_NUMBER.test(s)) {
+    if (LIMIT.test(req) && !HAS_NUMBER.test(s)) {
       questions.push({
         kind: "limit",
         question: "What is the actual number for this limit, and what happens exactly at it and one past it?",
