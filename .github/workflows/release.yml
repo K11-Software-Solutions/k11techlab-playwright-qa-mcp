@@ -23,7 +23,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          registry-url: https://registry.npmjs.org
+          # No registry-url: it writes an .npmrc with a placeholder auth token, and npm then tries
+          # that token instead of trusted publishing. npm's default registry is registry.npmjs.org.
           cache: npm
       - name: npm 11.5.1 or later (trusted publishing needs it; Node 22 ships npm 10)
         run: npm install -g npm@11.21.3 && npm --version
@@ -42,7 +43,7 @@ jobs:
           if npm view "k11-playwright-qa-mcp@${GITHUB_REF_NAME#v}" version >/dev/null 2>&1; then
             echo "Already on npm; skipping"
           else
-            npm publish --provenance --access public
+            npm publish --provenance --access public --loglevel verbose
           fi
 
       - name: Install cosign
