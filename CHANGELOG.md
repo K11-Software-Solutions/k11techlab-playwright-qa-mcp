@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **Fix:** `review_user_story` no longer asks limit questions about an answered story. "Expired" used as a state ("an expired code") and quoted on-screen text (`"This code has expired"`) no longer count as limits; quoted text is also no longer checked for vague words. A limit stated as a rule ("codes expire after a while") is still questioned.
+
 ## 0.4.0 (25 November 2026)
 
 - **Ask before you build:** new `review_user_story` tool. Before tests are generated, it lists the questions a careful tester would ask (missing acceptance criteria, outcomes that can't be asserted, no user role, untestable words, limits without numbers, no failure path, missing preconditions, and, with `context`, terms the context never explains), each with why it matters and the words that raised it.

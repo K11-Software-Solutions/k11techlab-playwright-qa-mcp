@@ -126,6 +126,30 @@ describe("review_user_story: negative controls (it must not over-ask)", () => {
     expect(review(raw).questions).toEqual([]);
   });
 
+  it("an answered story is ready: 'expired' as a state and quoted UI text don't raise limit questions", () => {
+    const answered = `As a signed-in shopper, I want to apply a discount code at checkout.
+Scenario: valid code
+  Given I have a cart worth $80
+  When I apply the code SAVE10
+  Then I see "Discount: -$8.00"
+Scenario: expired code
+  Given I have a cart worth $80
+  When I apply a code that expired 31 days ago
+  Then I see "This code has expired"`;
+    expect(review(answered)).toMatchObject({ ready: true, questions: [] });
+  });
+
+  it("quoted UI text with a vague word is not questioned, but the same word as a requirement is", () => {
+    const base = CLEAR.replace('Then I see "Welcome back"', 'Then I see "Fast checkout is ready"');
+    expect(review(base).questions).toEqual([]);
+    expect(kinds(`${base}\nCheckout must be fast.`)).toEqual(["vague-term"]);
+  });
+
+  it("a limit stated as a rule is still questioned", () => {
+    expect(kinds(`${CLEAR}\nCodes expire after a while.`)).toEqual(["limit"]);
+    expect(kinds(`${CLEAR}\nThe session expires when idle.`)).toEqual(["limit"]);
+  });
+
   it("each kind can be produced (none of the rules is dead)", () => {
     const produced = new Set<QuestionKind>([
       ...kinds("I want the search to be fast."),
