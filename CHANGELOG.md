@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- **Ask before you build:** new `review_user_story` tool. Before tests are generated, it lists the questions a careful tester would ask (missing acceptance criteria, outcomes that can't be asserted, no user role, untestable words, limits without numbers, no failure path, missing preconditions, and, with `context`, terms the context never explains), each with why it matters and the words that raised it.
+- `/story-to-test` and the `story_to_playwright` prompt now start with the review and wait for answers instead of guessing; open questions the user chooses to skip go into the spec and the final report.
+- `parse_user_story` returns a short `review` summary, so open questions are visible even when the review is skipped.
+
 ## 0.3.0 (16 November 2026)
 
 - **Mobile web:** `device` option (any Playwright device profile, e.g. "iPhone 15", "Pixel 7") on `explore_page`, `check_locator`, `capture_baseline`, `heal_locator` and `save_login_state`; new `list_devices` tool.

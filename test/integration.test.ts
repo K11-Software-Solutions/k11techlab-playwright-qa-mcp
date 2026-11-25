@@ -40,13 +40,20 @@ describe("MCP server over the protocol", () => {
     await Promise.all([server.connect(a), client.connect(b)]);
 
     const tools = (await client.listTools()).tools.map((t) => t.name).sort();
-    expect(tools).toEqual(["capture_baseline", "check_locator", "explore_page", "heal_locator", "list_devices", "parse_user_story", "run_tests", "save_login_state", "write_test"]);
+    expect(tools).toEqual(["capture_baseline", "check_locator", "explore_page", "heal_locator", "list_devices", "parse_user_story", "review_user_story", "run_tests", "save_login_state", "write_test"]);
     expect((await client.listPrompts()).prompts.map((p) => p.name)).toContain("story_to_playwright");
 
     const text = (r: unknown) => JSON.parse((r as { content: { text: string }[] }).content[0].text);
 
     const story = text(await client.callTool({ name: "parse_user_story", arguments: { story: "As a shopper, I want to sign in.\n- Valid login shows my name", url: v1 } }));
     expect(story.skeleton).toContain("test('Valid login shows my name'");
+    expect(story.review).toMatchObject({ ready: false, open_questions: 1 });          // no failure path yet
+    expect(story.review.note).toContain("review_user_story");
+
+    const vague = text(await client.callTool({ name: "review_user_story", arguments: { story: "I want login to be fast." } }));
+    expect(vague.ready).toBe(false);
+    expect(vague.questions.map((q: { kind: string }) => q.kind)).toEqual(["criteria", "role", "vague-term"]);
+    expect(vague.next).toContain("Ask the user");
 
     const written = text(await client.callTool({ name: "write_test", arguments: { path: "login.spec.ts", code: story.skeleton } }));
     expect(written.written).toBe("tests/login.spec.ts");

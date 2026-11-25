@@ -20,6 +20,7 @@ import { projectRoot, runTests, writeTest } from "./project.js";
 import { runSteps, STEP_ACTIONS, validateSteps, type Session } from "./session.js";
 import { explore, fingerprintOf } from "./snapshot.js";
 import { BaselineStore } from "./store.js";
+import { reviewStory } from "./clarify.js";
 import { parseStory, scaffoldSpec } from "./story.js";
 
 import { VERSION } from "./version.js";
@@ -180,16 +181,48 @@ export function createServer(): McpServer {
   );
 
   server.registerTool(
+    "review_user_story",
+    {
+      title: "Review user story before testing",
+      description:
+        "Call this BEFORE parse_user_story. Finds what a careful tester would ask before writing tests: missing acceptance criteria, " +
+        "outcomes that can't be asserted, no user role, untestable words (fast, easy, many), limits without numbers, no failure path, " +
+        "missing preconditions, and (with context) terms the context never explains. Returns questions for a person to answer, each with " +
+        "why it matters and the words that raised it. If ready is false, ask the user these questions and wait; do not guess the answers.",
+      inputSchema: {
+        story: z.string(),
+        context: z.string().optional().describe("Related product docs, glossary or notes; terms the story uses but this never explains become questions"),
+      },
+    },
+    async ({ story, context }) => {
+      const review = reviewStory(parseStory(story), story, context);
+      return json({
+        ...review,
+        next: review.ready
+          ? "No open questions. Continue with parse_user_story."
+          : "Ask the user these questions and wait for answers. Add the answers to the story (as acceptance criteria or Given/When/Then), then call review_user_story again.",
+      });
+    },
+  );
+
+  server.registerTool(
     "parse_user_story",
     {
       title: "Parse user story",
       description:
-        "Turn a user story (As a.../I want.../so that..., Gherkin scenarios, or acceptance-criteria bullets) into structured scenarios and a Playwright Test skeleton with one test per scenario and one test.step per step.",
+        "Turn a user story (As a.../I want.../so that..., Gherkin scenarios, or acceptance-criteria bullets) into structured scenarios and a Playwright Test skeleton with one test per scenario and one test.step per step. " +
+        "Call review_user_story first; the result includes a short review so open questions are never silently skipped.",
       inputSchema: { story: z.string(), url: z.string().optional().describe("Start page, added as page.goto in beforeEach") },
     },
     async ({ story, url }) => {
       const parsed = parseStory(story);
-      return json({ story: parsed, skeleton: scaffoldSpec(parsed, url) });
+      const review = reviewStory(parsed, story);
+      return json({
+        story: parsed,
+        skeleton: scaffoldSpec(parsed, url),
+        review: { ready: review.ready, open_questions: review.questions.length,
+                  ...(review.ready ? {} : { note: "This story has open questions; call review_user_story and ask the user before filling in the tests." }) },
+      });
     },
   );
 
@@ -337,13 +370,14 @@ export function createServer(): McpServer {
             story,
             "",
             "Workflow:",
-            "1. parse_user_story (with the URL) to get scenarios and a skeleton.",
-            "2. explore_page on the URL to get verified locators. For pages behind a login, first call save_login_state (passwords as ${ENV:NAME}) and pass session.storage_state; for pages several steps into a flow, pass session.steps.",
-            "3. Fill in every TODO using ONLY verified locators (prefer getByTestId/getByRole) and web-first assertions (await expect(...).toBeVisible()/toHaveText()/toHaveURL()). No fixed waits.",
-            "4. write_test to tests/<feature>.spec.ts.",
-            "5. run_tests on that spec. For locator failures call heal_locator (with the same session); fix logic failures yourself. Repeat until it passes or a real product bug is found (report it, don't hide it).",
-            "6. capture_baseline for the locators the test uses (with the same session), so future UI changes can be healed.",
-            "Finish with: the file path, what each test covers, and any acceptance criteria you could not automate and why.",
+            "1. review_user_story. If ready is false, ask the user its questions and STOP until they answer; add the answers to the story and review again. If the user says to go ahead anyway, carry the open questions into the spec as comments and the final report; never guess the answers.",
+            "2. parse_user_story (with the URL) to get scenarios and a skeleton.",
+            "3. explore_page on the URL to get verified locators. For pages behind a login, first call save_login_state (passwords as ${ENV:NAME}) and pass session.storage_state; for pages several steps into a flow, pass session.steps.",
+            "4. Fill in every TODO using ONLY verified locators (prefer getByTestId/getByRole) and web-first assertions (await expect(...).toBeVisible()/toHaveText()/toHaveURL()). No fixed waits.",
+            "5. write_test to tests/<feature>.spec.ts.",
+            "6. run_tests on that spec. For locator failures call heal_locator (with the same session); fix logic failures yourself. Repeat until it passes or a real product bug is found (report it, don't hide it).",
+            "7. capture_baseline for the locators the test uses (with the same session), so future UI changes can be healed.",
+            "Finish with: the file path, what each test covers, the questions asked and their answers (or any still open), and any acceptance criteria you could not automate and why.",
           ].join("\n"),
         },
       }],
