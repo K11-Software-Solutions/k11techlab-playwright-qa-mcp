@@ -3,7 +3,7 @@
 **Product:** k11 Playwright QA (MCP server and Claude Code plugin)
 **Package:** [`k11-playwright-qa-mcp`](https://www.npmjs.com/package/k11-playwright-qa-mcp) on npm
 **Maintainer:** [K11 Software Solutions LLC](https://k11softwaresolutions.com)
-**Current release:** v0.2.1 (13 November 2026)
+**Current release:** v0.4.0 (25 November 2026)
 
 This document describes how K11 Software Solutions versions, tests, publishes and supports releases of k11 Playwright QA. Every release follows the same quality gates, whether it is published automatically or by hand.
 
@@ -111,6 +111,23 @@ Published npm versions cannot be replaced. Instead:
 ---
 
 ## Release history
+
+### v0.4.0 (25 November 2026): ask before you build
+
+**Highlights**
+
+- **`review_user_story` tool:** before tests are generated, lists the questions a careful tester would ask: missing acceptance criteria, outcomes that can't be asserted, no user role, untestable words (fast, easy, many), limits without numbers, no failure path, missing preconditions, and, with `context`, terms the context never explains. Each question says why it matters and quotes the words that raised it.
+- **`/story-to-test` and the `story_to_playwright` prompt** start with the review and wait for answers instead of guessing. Open questions the user chooses to skip go into the spec as `// OPEN QUESTION:` comments and into the final report.
+- **`parse_user_story`** returns a short `review` summary, so open questions stay visible even when the review is skipped.
+
+**Compatibility:** no breaking changes. One new tool; one new output field on `parse_user_story`. The story-to-test workflow now pauses for answers when a story is unclear.
+
+### v0.3.0 (16 November 2026): mobile web
+
+- **Mobile web:** a `device` option (any Playwright device profile, such as "iPhone 15" or "Pixel 7") on `explore_page`, `check_locator`, `capture_baseline`, `heal_locator` and `save_login_state`, and a new `list_devices` tool.
+- `check_locator` with `devices` checks a locator on several devices at once; `heal_locator` with `check_devices` verifies the suggestion on other devices.
+- Baselines are kept per device; existing desktop baselines are unchanged. `run_tests` takes a Playwright `project`.
+- **heal-ci across Playwright projects:** failures are healed on the device each project emulates, and a change is kept only if the test passes in every project.
 
 ### v0.2.1 (13 November 2026): registry listing
 

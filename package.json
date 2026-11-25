@@ -1,6 +1,6 @@
 {
   "name": "k11-playwright-qa-mcp",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "mcpName": "io.github.K11-Software-Solutions/playwright-qa",
   "description": "MCP server and Claude Code plugin for Playwright QA: user stories to verified tests, structured test runs, and self-healing locators.",
   "main": "dist/server.js",
