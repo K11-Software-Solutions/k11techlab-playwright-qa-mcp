@@ -3,7 +3,7 @@
 **Product:** k11 Playwright QA (MCP server and Claude Code plugin)
 **Package:** [`k11-playwright-qa-mcp`](https://www.npmjs.com/package/k11-playwright-qa-mcp) on npm
 **Maintainer:** [K11 Software Solutions LLC](https://k11softwaresolutions.com)
-**Current release:** v0.4.0 (25 November 2026)
+**Current release:** v0.4.1 (25 November 2026)
 
 This document describes how K11 Software Solutions versions, tests, publishes and supports releases of k11 Playwright QA. Every release follows the same quality gates, whether it is published automatically or by hand.
 
@@ -117,6 +117,12 @@ Published npm versions cannot be replaced. Instead:
 ---
 
 ## Release history
+
+### v0.4.1 (25 November 2026): fix over-asking
+
+- `review_user_story` no longer asks limit questions about an answered story: "expired" used as a state, and quoted on-screen text, no longer count as limits, and quoted text is not checked for vague words. Limits stated as rules ("codes expire after a while") are still questioned.
+
+**Compatibility:** no changes to tools, inputs or outputs.
 
 ### v0.4.0 (25 November 2026): ask before you build
 
