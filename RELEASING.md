@@ -53,13 +53,19 @@ Gates 1 and 2 run automatically before every publish (`prepublishOnly`), so a br
    git push origin main --tags
    ```
 
-6. The **Release** workflow verifies the tag, runs the tests and publishes to npm with [provenance](https://docs.npmjs.com/generating-provenance-statements), which links each published package to the exact source commit that built it. It then updates the listing in the official [MCP Registry](https://registry.modelcontextprotocol.io) as `io.github.K11-Software-Solutions/playwright-qa`, signing in with the workflow's GitHub identity.
+6. The **Release** workflow verifies the tag, runs the tests and publishes to npm by [trusted publishing](https://docs.npmjs.com/trusted-publishers), with [provenance](https://docs.npmjs.com/generating-provenance-statements), which links each published package to the exact source commit that built it. It then updates the listing in the official [MCP Registry](https://registry.modelcontextprotocol.io) as `io.github.K11-Software-Solutions/playwright-qa`, signing in with the workflow's GitHub identity.
 7. Create a GitHub Release from the tag, using the release-history entry as the notes.
 8. Verify the published package (see below).
 
 ### Publishing setup (one time)
 
-Automated publishing needs an npm granular access token with publish rights for `k11-playwright-qa-mcp`, stored as the GitHub repository secret `NPM_TOKEN` (Settings → Secrets and variables → Actions).
+Publishing uses npm **trusted publishing**: npm accepts the Release workflow's GitHub identity (OIDC) instead of a stored token, so there is no npm token to leak or expire. Set it up once on npmjs.com, as a maintainer of the package:
+
+1. Open the package's **Settings** page on npmjs.com, find **Trusted Publisher**, and choose **GitHub Actions**.
+2. Organization or user: `K11-Software-Solutions`. Repository: `k11techlab-playwright-qa-mcp`. Workflow filename: `release.yml`. Leave the environment empty.
+3. Save. Optionally, under **Publishing access**, require two-factor authentication and disallow tokens, so trusted publishing is the only way to publish.
+
+The workflow installs npm 11.5.1 or later, which trusted publishing needs, and has the `id-token: write` permission. Releases up to v0.3.0 used an `NPM_TOKEN` repository secret; it is no longer read and can be deleted.
 
 ### Manual publish (fallback)
 
