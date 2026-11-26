@@ -3,7 +3,7 @@
 **Product:** k11 Playwright QA (MCP server and Claude Code plugin)
 **Package:** [`k11-playwright-qa-mcp`](https://www.npmjs.com/package/k11-playwright-qa-mcp) on npm
 **Maintainer:** [K11 Software Solutions LLC](https://k11softwaresolutions.com)
-**Current release:** v0.4.1 (25 November 2026)
+**Current release:** v0.4.2 (26 November 2026)
 
 This document describes how K11 Software Solutions versions, tests, publishes and supports releases of k11 Playwright QA. Every release follows the same quality gates, whether it is published automatically or by hand.
 
@@ -117,6 +117,12 @@ Published npm versions cannot be replaced. Instead:
 ---
 
 ## Release history
+
+### v0.4.2 (26 November 2026): rejections count as failure paths
+
+- `review_user_story` no longer asks "What should happen when it goes wrong?" about a story that already describes a rejection ("Cancelling is rejected when it already shipped"): rejected, refused, declined, disallowed and blocked now count as failure words. Same rules as k11 Selenium QA 0.3.1 and k11 API Functional QA 0.2.2.
+
+**Compatibility:** no changes to tools, inputs or outputs.
 
 ### v0.4.1 (25 November 2026): fix over-asking
 
