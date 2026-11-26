@@ -44,7 +44,7 @@ const VAGUE = [
 ];
 const VAGUE_OUTCOME = /\b(works?|working|is successful|succeeds?|correctly|properly|as expected|is handled|handles it|is fine|is ok(ay)?)\b/i;
 const OBSERVABLE = /\b(see|sees|shown?|shows|display(s|ed)?|visible|message|redirect(s|ed)?|page|url|receives?|email|download(s|ed)?|disabled|enabled|error|text|title|heading|count|list|button|link|status|toast|banner|notification|"[^"]+")\b/i;
-const FAILURE = /\b(invalid|wrong|incorrect|error|fail(s|ed|ure)?|denied|forbidden|unauthori[sz]ed|expired?|empty|missing|blank|not\b|no\b|cannot|can't|unknown|locked|timeout|offline|duplicate|too (long|many|short))\b/i;
+const FAILURE = /\b(invalid|wrong|incorrect|error|fail(s|ed|ure)?|denied|forbidden|reject(s|ed)?|refuse[sd]?|declined|disallowed|blocked|unauthori[sz]ed|expired?|empty|missing|blank|not\b|no\b|cannot|can't|unknown|locked|timeout|offline|duplicate|too (long|many|short))\b/i;
 const LIMIT = /\b(up to|at most|at least|maximum|minimum|max|min|limit(ed)?|expires?|timeout|within|no more than|no less than|threshold|retries|attempts)\b/i;
 const HAS_NUMBER = /\d/;
 const STOP_TERMS = new Set(["As", "I", "Given", "When", "Then", "And", "But", "Scenario", "Title", "Story", "Feature",
