@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.2 (26 November 2026)
+
+- **Fix:** `review_user_story` asked "What should happen when it goes wrong?" about stories that already describe a rejection, such as "Cancelling is rejected when it already shipped". The failure-path rule now also counts "rejected"/"rejects", "refused"/"refuses", "declined", "disallowed" and "blocked" as failure words. The same rules ship in k11 Selenium QA 0.3.1 and k11 API Functional QA 0.2.2; the shared `test/fixtures/review_cases.json` has a new case for it.
+
 ## 0.4.1 (25 November 2026)
 
 - **Fix:** `review_user_story` no longer asks limit questions about an answered story. "Expired" used as a state ("an expired code") and quoted on-screen text (`"This code has expired"`) no longer count as limits; quoted text is also no longer checked for vague words. A limit stated as a rule ("codes expire after a while") is still questioned.
